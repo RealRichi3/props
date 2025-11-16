@@ -1,0 +1,17 @@
+
+
+- Implement data generators
+    AIM
+    - Review existing real world traffic patterns and try to generate synthetic data that closely relates
+
+- Main implementation 
+    - Overall architecture
+        - Junction prediction for turn
+            - GPS prediction for vehicles - Make this a separate module so you can use other models for GPS turn predictions
+            - Other state parameters that will be included should be reviewed 
+            - Junction traffic controller 
+
+
+    
+    
+- Data analysis 
