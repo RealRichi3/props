@@ -1,5 +1,5 @@
 import logging
-from config import Config
+from .config import Config
 from typing import TypedDict, Literal, Optional
 
 
@@ -9,9 +9,11 @@ class LoggerOptions(TypedDict):
 
 
 def new_logger(options: LoggerOptions, configMgr: Config = Config()) -> logging.Logger:
-    logger = logging.getLogger(options.name)
+    logger = logging.getLogger(options["name"])
     log_level = (
-        options.level if options.level else configMgr.get_section("logging").log_level
+        options.get("level")
+        if options.get("level")
+        else configMgr.get_section("logging")["log_level"]
     )
 
     if not logger.handlers:
@@ -23,7 +25,8 @@ def new_logger(options: LoggerOptions, configMgr: Config = Config()) -> logging.
         )
         ch.setFormatter(formatter)
 
-        # Set logger level to DEBUG by default (can be overridden later)
+        logger.addHandler(ch)
+
         logger.setLevel(log_level)
 
     return logger
