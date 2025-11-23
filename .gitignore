@@ -1,2 +1,6 @@
 htmlcov
+src/props.egg-info
+.coverage
+coverage.xml
+.pytest_cache
 
