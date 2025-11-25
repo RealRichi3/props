@@ -1,0 +1,18 @@
+<!-- cross.sumocfg -->
+<configuration>
+    <input>
+        <net-file value="cross.net.xml"/>
+        <route-files value="multi_trip_episode/experiment_traffic_run1.rou.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+        <end value="1800"/>  <!-- Run for 3600 seconds (1 hour) -->
+    </time>
+    <!-- Additional files for detectors and logging -->
+    <!-- <additional-files value="traffic_light_detectors.add.xml"/> -->
+    <!-- Processing options for better data collection -->
+    <processing>
+        <time-to-teleport value="-1"/>
+        <max-depart-delay value="3600"/>
+    </processing>
+</configuration>
