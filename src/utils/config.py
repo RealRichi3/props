@@ -1,7 +1,10 @@
 import copy
 import json
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Literal
+
+
+ConfigSection = Literal["simulation", "logging", "prediction", "traffic"]
 
 
 class Config:
@@ -42,7 +45,19 @@ class Config:
                 "persistence_file": "out_data/prediction_data.json",
                 "use_json_persistence": True,
             },
-            "simulation": {},
+            "simulation": {
+                "sumo_binary": "sumo_binary",
+                "config_file": "sumo/cross.sumocfg",
+                "port": 1337,
+                "num_clients": 1,
+                "gui": True,
+                "step_length": 0.1,
+                "delay": 200,
+                "auto_start": True,
+                "auto_reconnect": True,
+                "max_reconnect_attempts": 3,
+                "reconnect_delay": 1.0,
+            },
             "traffic": {},
             "logging": {
                 "log_level": "INFO",
@@ -93,7 +108,7 @@ class Config:
             else:
                 self.config[section] = values
 
-    def get(self, section: str, key: str, default: Any = None) -> Any:
+    def get(self, section: ConfigSection, key: str, default: Any = None) -> Any:
         """
         Get a configuration value.
 
@@ -109,7 +124,7 @@ class Config:
             return self.config[section][key]
         return default
 
-    def get_section(self, section: str) -> Dict[str, Any]:
+    def get_section(self, section: ConfigSection) -> Dict[str, Any]:
         """
         Get an entire configuration section.
 

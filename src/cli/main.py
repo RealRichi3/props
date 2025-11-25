@@ -10,6 +10,9 @@ import subprocess
 from typing import List, Optional
 import argparse
 
+from ..utils.config import Config
+from ..core.sumo import Sumo
+
 
 def run_tests(args: Optional[List[str]] = None) -> int:
     """Run the test suite using pytest."""
@@ -31,9 +34,11 @@ def run_tests(args: Optional[List[str]] = None) -> int:
 
 def run_simulation(args: List[str]) -> int:
     """Run traffic simulation (placeholder for future implementation)."""
-    print("Traffic simulation not yet implemented.")
-    print("Args:", args)
-    return 0
+    sumo = Sumo({}, Config())
+    sumo.connect()
+    sumo.run_simulation()
+
+    return 1
 
 
 def run_train(args: List[str]) -> int:
@@ -128,4 +133,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-
