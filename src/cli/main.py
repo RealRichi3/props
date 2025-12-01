@@ -10,8 +10,9 @@ import subprocess
 from typing import List, Optional
 import argparse
 
-from ..utils.config import Config
+from ..utils.config import Config, ConfigOption, ConfigGlobals
 from ..core.sumo import Sumo
+from datetime import datetime
 
 
 def run_tests(args: Optional[List[str]] = None) -> int:
@@ -34,7 +35,10 @@ def run_tests(args: Optional[List[str]] = None) -> int:
 
 def run_simulation(args: List[str]) -> int:
     """Run traffic simulation (placeholder for future implementation)."""
-    sumo = Sumo({}, Config())
+    opts = ConfigOption(
+        global_config_overides=ConfigGlobals(timestamp=str(datetime.now()))
+    )
+    sumo = Sumo({}, Config(opts))
     sumo.connect()
     sumo.run_simulation()
 
