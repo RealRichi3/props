@@ -2,9 +2,42 @@ import copy
 import json
 import os
 from typing import Any, Dict, Optional, Literal
+from datetime import datetime
+from dataclasses import dataclass, asdict
 
 
-ConfigSection = Literal["simulation", "logging", "prediction", "traffic"]
+def _resolve_path_from_project_root(path: str) -> str:
+    """
+    Resolve path to absolute path from project root.
+
+    Args:
+        path: Path that could be relative or absolute
+
+    Returns:
+        Absolute path
+    """
+    if os.path.isabs(path):
+        return path
+    else:
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        full_path = os.path.join(project_root, path)
+        return os.path.abspath(full_path)
+
+
+@dataclass
+class ConfigGlobals:
+    timestamp: Optional[str] = datetime.now().strftime("%Y%m%d_%H%M%S")
+    out_dir: Optional[str] = _resolve_path_from_project_root("./out_dir")
+
+
+ConfigSection = Literal["simulation", "logging", "prediction", "traffic", "global"]
+
+
+@dataclass
+class ConfigOption:
+    section: Optional[ConfigSection] = None
+    global_config_overides: Optional[ConfigGlobals] = None
+    config_path: Optional[str] = None
 
 
 class Config:
@@ -15,25 +48,42 @@ class Config:
     validating configuration values, and accessing configuration in a consistent way.
     """
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, opts: Optional[ConfigOption] = None):
         """
         Initialize the configuration manager.
 
         Args:
-            config_path: Optional path to a configuration file
+            opts: Configuration options including global overrides
         """
-        self.config = self._load_default_config()
-        if config_path:
-            self._load_config_from_file(config_path)
+        # Pass global overrides to default config loading
+        global_overrides = opts.global_config_overides if opts else None
+        self.config = self._load_default_config(global_overrides)
 
-    def _load_default_config(self) -> Dict[str, Any]:
+        if opts and opts.config_path:
+            self._load_config_from_file(opts.config_path)
+
+    def _load_default_config(
+        self, globals: Optional[ConfigGlobals] = ConfigGlobals()
+    ) -> Dict[str, Any]:
         """
         Load default configuration values.
 
         Returns:
             Dictionary containing default configuration
         """
+        # Merge defaults with global overrides
+        global_config = {
+            **asdict(ConfigGlobals()),
+            **(asdict(globals) if globals else {}),
+        }
+
+        if "out_dir" in global_config:
+            global_config["out_dir"] = _resolve_path_from_project_root(
+                global_config["out_dir"]
+            )
+
         return {
+            "global": global_config,
             "prediction": {
                 "max_route_length": 10,
                 "max_vehicle_history": 1000,
@@ -108,6 +158,12 @@ class Config:
             else:
                 self.config[section] = values
 
+        # Resolve out_dir path if it was updated in global section
+        if "global" in new_config and "out_dir" in new_config["global"]:
+            self.config["global"]["out_dir"] = _resolve_path_from_project_root(
+                self.config["global"]["out_dir"]
+            )
+
     def get(self, section: ConfigSection, key: str, default: Any = None) -> Any:
         """
         Get a configuration value.
@@ -147,6 +203,11 @@ class Config:
         """
         if section not in self.config:
             self.config[section] = {}
+
+        # Resolve out_dir path if being set in global section
+        if section == "global" and key == "out_dir" and isinstance(value, str):
+            value = _resolve_path_from_project_root(value)
+
         self.config[section][key] = value
 
     def load_from_env(self, prefix: str = "APP_") -> None:
